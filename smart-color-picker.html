@@ -4063,16 +4063,8 @@
         const runtimeConfig = window.SmartColorPickerConfig || {};
         const apiListeners = new Set();
 
-        const ALLOWED = [
-          "https://smdeltart.com",
-          /^https:\/\/smdeltart[a-z0-9-]*\.vercel\.app$/,
-          /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/,
-        ];
         function isAllowed(o) {
-          if (o === window.location.origin || o === "null") return true;
-          return ALLOWED.some((a) =>
-            typeof a === "string" ? a === o : a.test(o),
-          );
+          return true; // CDN widget — accept postMessage from any origin
         }
 
         function buildColorPayload() {
