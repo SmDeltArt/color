@@ -117,6 +117,7 @@ These apps embed the picker from `color-picker.caddeltai.com` when deployed, and
 | --- | ------ | ----------- |
 | SmΔrt SVG Editor | `widgets.smdeltart.com/?app=svg` | overlay panel — `embed=overlay` mode |
 | SmΔrt 3D Editor | `widgets.smdeltart.com/?app=3d` | background color + material color picker |
+| SmΔrt IceOff | `widgets.smdeltart.com/?app=iceoff` | floating iframe — text color + bg color via `_openColorPicker` |
 
 Both use the same isLocal bridge pattern (see [Embed from any SmΔrt app](#embed-from-any-smrt-app-islocal-pattern) above).
 
