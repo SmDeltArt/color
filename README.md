@@ -23,11 +23,11 @@ Just open `smart-color-picker.html` in any browser, or click the live links abov
 
 ### 2. Embed in your site (iframe)
 
-Use the Vercel CDN URL — open CORS, `frame-ancestors *`, `Cross-Origin-Resource-Policy: cross-origin`:
+Use the GitHub Pages URL — open CORS, serves `text/html` correctly for iframes:
 
 ```html
 <iframe
-  src="https://color-picker.caddeltai.com/?embed=overlay"
+  src="https://smdeltart.github.io/smart-color-picker/smart-color-picker.html?embed=overlay"
   style="border:0;width:420px;height:560px;background:transparent"
   allowtransparency="true"
 ></iframe>
@@ -73,7 +73,7 @@ and production uses the CDN:
 const isLocal = ["localhost", "127.0.0.1"].includes(window.location.hostname);
 const SCP_SRC = isLocal
   ? "smart-color-picker.html?embed=overlay" // same-origin (local dev)
-  : "https://color-picker.caddeltai.com/?embed=overlay"; // Vercel CDN (production)
+  : "https://smdeltart.github.io/smart-color-picker/smart-color-picker.html?embed=overlay"; // GitHub Pages (production)
 ```
 
 Then set the iframe src:
@@ -113,11 +113,11 @@ color picker holds no sensitive data. The `postMessage` protocol uses the
 
 These apps embed the picker from `color-picker.caddeltai.com` when deployed, and from a local copy during development (isLocal pattern):
 
-| App | Domain | Integration |
-| --- | ------ | ----------- |
-| SmΔrt SVG Editor | `widgets.smdeltart.com/?app=svg` | overlay panel — `embed=overlay` mode |
-| SmΔrt 3D Editor | `widgets.smdeltart.com/?app=3d` | background color + material color picker |
-| SmΔrt IceOff | `widgets.smdeltart.com/?app=iceoff` | floating iframe — text color + bg color via `_openColorPicker` |
+| App              | Domain                              | Integration                                                    |
+| ---------------- | ----------------------------------- | -------------------------------------------------------------- |
+| SmΔrt SVG Editor | `widgets.smdeltart.com/?app=svg`    | overlay panel — `embed=overlay` mode                           |
+| SmΔrt 3D Editor  | `widgets.smdeltart.com/?app=3d`     | background color + material color picker                       |
+| SmΔrt IceOff     | `widgets.smdeltart.com/?app=iceoff` | floating iframe — text color + bg color via `_openColorPicker` |
 
 Both use the same isLocal bridge pattern (see [Embed from any SmΔrt app](#embed-from-any-smrt-app-islocal-pattern) above).
 
