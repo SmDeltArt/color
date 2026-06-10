@@ -3585,8 +3585,9 @@
             if (saved) {
               const g = JSON.parse(saved);
               if (g && Array.isArray(g.stops) && g.stops.length >= 2) {
-                S.grad.type  = g.type  || S.grad.type;
-                S.grad.angle = typeof g.angle === "number" ? g.angle : S.grad.angle;
+                S.grad.type = g.type || S.grad.type;
+                S.grad.angle =
+                  typeof g.angle === "number" ? g.angle : S.grad.angle;
                 S.grad.stops = g.stops;
                 S.grad.activeStop = 0;
               }
@@ -4147,11 +4148,14 @@
         // Save gradient stops/type/angle to localStorage so they survive re-opens
         function saveGradState() {
           try {
-            localStorage.setItem("scp-grad-data", JSON.stringify({
-              type:  S.grad.type,
-              angle: S.grad.angle,
-              stops: S.grad.stops,
-            }));
+            localStorage.setItem(
+              "scp-grad-data",
+              JSON.stringify({
+                type: S.grad.type,
+                angle: S.grad.angle,
+                stops: S.grad.stops,
+              }),
+            );
           } catch (_) {}
         }
 
