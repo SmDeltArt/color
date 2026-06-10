@@ -10,7 +10,7 @@
   ],
   "headers": [
     {
-      "source": "/(.*)",
+      "source": "/:path*",
       "headers": [
         { "key": "Access-Control-Allow-Origin",  "value": "*" },
         { "key": "Content-Security-Policy",      "value": "frame-ancestors *" },
