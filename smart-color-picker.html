@@ -80,12 +80,32 @@
         border-radius: var(--cp-r);
         box-shadow: var(--cp-shadow);
         backdrop-filter: blur(var(--cp-blur));
+        /* Scroll is handled by .scp-lower-scroll below the color wheel */
         overflow: hidden;
         user-select: none;
         display: none;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
+      }
+      /* ── Scrollable section below the color wheel ── */
+      .scp-lower-scroll {
+        overflow-y: auto;
+        overflow-x: hidden;
+        max-height: 315px;
+        scrollbar-width: thin;
+        scrollbar-color: #6366f1 rgba(0, 0, 0, 0.12);
+      }
+      .scp-lower-scroll::-webkit-scrollbar {
+        width: 4px;
+      }
+      .scp-lower-scroll::-webkit-scrollbar-thumb {
+        background: linear-gradient(180deg, #6366f1 0%, #06b6d4 100%);
+        border-radius: 2px;
+      }
+      .scp-lower-scroll::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.12);
+        border-radius: 2px;
       }
       .scp.open {
         display: block;
@@ -769,33 +789,11 @@
         display: none;
         padding: 4px 10px 8px;
         font-size: 11px;
-        max-height: clamp(168px, 42vh, 264px);
-        overflow-y: auto;
-        overscroll-behavior: contain;
-        touch-action: pan-y;
-        scrollbar-width: thin;
-        scrollbar-color: var(--cp-indigo) transparent;
+        /* Scroll is now handled by parent .scp-lower-scroll */
+        overflow: visible;
       }
       .scp-grad-body.open {
         display: block;
-      }
-      .scp-grad-body::-webkit-scrollbar {
-        width: 6px;
-      }
-      .scp-grad-body::-webkit-scrollbar-track {
-        background: rgba(255, 255, 255, 0.04);
-        border-radius: 3px;
-      }
-      .scp-grad-body::-webkit-scrollbar-thumb {
-        background: linear-gradient(
-          180deg,
-          var(--cp-primary),
-          var(--cp-indigo)
-        );
-        border-radius: 3px;
-      }
-      body[data-theme="light"] .scp-grad-body::-webkit-scrollbar-track {
-        background: rgba(0, 0, 0, 0.05);
       }
 
       /* Controls row: Lin/Rad + angle bar + +/- all inline */
@@ -2149,245 +2147,254 @@
       <!-- Gradient header (collapsed view): just the toggle pill.
            When .open is set on #gradToggle, #gradBody reveals the full
            Lin/Rad + angle dial + stop controls + format preview. -->
-      <div class="scp-grad-header">
-        <button
-          class="scp-grad-toggle"
-          id="gradToggle"
-          data-tut-key="tut.gradToggle"
-          data-tut="Gradient On/Off|Toggles gradient mode. When ON the picker emits a CSS gradient and exposes Linear/Radial type, angle, presets and harmonies. Each stop has its own color + alpha."
-          title="Toggle gradient panel"
-          aria-expanded="false"
-          aria-controls="gradBody"
-        >
-          <!--
+      <div class="scp-lower-scroll" id="scpLowerScroll">
+        <div class="scp-grad-header">
+          <button
+            class="scp-grad-toggle"
+            id="gradToggle"
+            data-tut-key="tut.gradToggle"
+            data-tut="Gradient On/Off|Toggles gradient mode. When ON the picker emits a CSS gradient and exposes Linear/Radial type, angle, presets and harmonies. Each stop has its own color + alpha."
+            title="Toggle gradient panel"
+            aria-expanded="false"
+            aria-controls="gradBody"
+          >
+            <!--
             Colourful animated palette icon (replaces old plain Δ).
             • viewBox 0 0 32 32, rendered at 18×18 in CSS.
             • Inner <animate> elements cycle the four orbiting dot
               colours every 4s so the toggle reads as colour-related
               even when the gradient panel is collapsed.
           -->
-          <svg
-            class="scp-delta-icon"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 32 32"
-            aria-hidden="true"
-          >
-            <g data-content-wrapper="true">
-              <g data-scale-wrapper="true" transform="scale(0.8889)">
-                <path
-                  fill="none"
-                  stroke="#c48a63"
-                  stroke-width="1.98"
-                  stroke-linecap="round"
-                  d="M18 3.143c-9.941 0-18 6.908-18 15.428 0 1.066.126 2.107.367 3.112C2.146 24.744 3.377 22.812 9 20c5.727-2.864 0 4-2 8-.615 1.23-.282 2.271.56 3.124C10.506 32.928 14.104 34 18 34c9.941 0 18-6.907 18-15.429 0-8.52-8.059-15.428-18-15.428zm2.849 24.447c-.395 1.346-2.46 1.924-4.613 1.291-2.153-.632-3.578-2.234-3.183-3.581.395-1.346 2.46-1.924 4.613-1.29 2.153.631 3.578 2.233 3.183 3.58z"
-                  transform="translate(0.99, 0.98) scale(0.927, 0.927)"
-                />
-                <circle
-                  cx="10"
-                  cy="11"
-                  r="3"
-                  fill="#5C913B"
-                  stroke-width="1.98"
-                  transform="scale(1.150, 1.100)"
-                >
-                  <animate
-                    attributeName="fill"
-                    values="#5C913B;#269;#DD2E44;#FFCC4D;#5C913B"
-                    dur="4s"
-                    repeatCount="indefinite"
+            <svg
+              class="scp-delta-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 32 32"
+              aria-hidden="true"
+            >
+              <g data-content-wrapper="true">
+                <g data-scale-wrapper="true" transform="scale(0.8889)">
+                  <path
+                    fill="none"
+                    stroke="#c48a63"
+                    stroke-width="1.98"
+                    stroke-linecap="round"
+                    d="M18 3.143c-9.941 0-18 6.908-18 15.428 0 1.066.126 2.107.367 3.112C2.146 24.744 3.377 22.812 9 20c5.727-2.864 0 4-2 8-.615 1.23-.282 2.271.56 3.124C10.506 32.928 14.104 34 18 34c9.941 0 18-6.907 18-15.429 0-8.52-8.059-15.428-18-15.428zm2.849 24.447c-.395 1.346-2.46 1.924-4.613 1.291-2.153-.632-3.578-2.234-3.183-3.581.395-1.346 2.46-1.924 4.613-1.29 2.153.631 3.578 2.233 3.183 3.58z"
+                    transform="translate(0.99, 0.98) scale(0.927, 0.927)"
                   />
-                </circle>
-                <circle
-                  cx="20"
-                  cy="9"
-                  r="3"
-                  fill="#269"
-                  stroke-width="1.98"
-                  transform="translate(-0.44, 0.00) scale(1.064, 1.112)"
-                >
-                  <animate
-                    attributeName="fill"
-                    values="#269;#DD2E44;#FFCC4D;#5C913B;#269"
-                    dur="4s"
-                    repeatCount="indefinite"
-                  />
-                </circle>
-                <circle
-                  cx="29"
-                  cy="15"
-                  r="3"
-                  fill="#DD2E44"
-                  stroke-width="1.98"
-                  transform="translate(-3.14, 0.98) scale(1.049, 0.968)"
-                >
-                  <animate
-                    attributeName="fill"
-                    values="#DD2E44;#FFCC4D;#5C913B;#269;#DD2E44"
-                    dur="4s"
-                    repeatCount="indefinite"
-                  />
-                </circle>
-                <circle
-                  cx="28"
-                  cy="24"
-                  r="3"
-                  fill="#FFCC4D"
-                  stroke-width="1.98"
-                  transform="translate(-6.75, -3.00) scale(1.167, 1.083)"
-                >
-                  <animate
-                    attributeName="fill"
-                    values="#FFCC4D;#5C913B;#269;#DD2E44;#FFCC4D"
-                    dur="4s"
-                    repeatCount="indefinite"
-                  />
-                </circle>
+                  <circle
+                    cx="10"
+                    cy="11"
+                    r="3"
+                    fill="#5C913B"
+                    stroke-width="1.98"
+                    transform="scale(1.150, 1.100)"
+                  >
+                    <animate
+                      attributeName="fill"
+                      values="#5C913B;#269;#DD2E44;#FFCC4D;#5C913B"
+                      dur="4s"
+                      repeatCount="indefinite"
+                    />
+                  </circle>
+                  <circle
+                    cx="20"
+                    cy="9"
+                    r="3"
+                    fill="#269"
+                    stroke-width="1.98"
+                    transform="translate(-0.44, 0.00) scale(1.064, 1.112)"
+                  >
+                    <animate
+                      attributeName="fill"
+                      values="#269;#DD2E44;#FFCC4D;#5C913B;#269"
+                      dur="4s"
+                      repeatCount="indefinite"
+                    />
+                  </circle>
+                  <circle
+                    cx="29"
+                    cy="15"
+                    r="3"
+                    fill="#DD2E44"
+                    stroke-width="1.98"
+                    transform="translate(-3.14, 0.98) scale(1.049, 0.968)"
+                  >
+                    <animate
+                      attributeName="fill"
+                      values="#DD2E44;#FFCC4D;#5C913B;#269;#DD2E44"
+                      dur="4s"
+                      repeatCount="indefinite"
+                    />
+                  </circle>
+                  <circle
+                    cx="28"
+                    cy="24"
+                    r="3"
+                    fill="#FFCC4D"
+                    stroke-width="1.98"
+                    transform="translate(-6.75, -3.00) scale(1.167, 1.083)"
+                  >
+                    <animate
+                      attributeName="fill"
+                      values="#FFCC4D;#5C913B;#269;#DD2E44;#FFCC4D"
+                      dur="4s"
+                      repeatCount="indefinite"
+                    />
+                  </circle>
+                </g>
               </g>
-            </g>
-          </svg>
-          <!-- Label flips OFF/ON via .open class on the button so the
+            </svg>
+            <!-- Label flips OFF/ON via .open class on the button so the
                collapsed pill still tells the user what state it's in. -->
-          <span class="scp-grad-label scp-grad-label--off">Gradient Off</span>
-          <span class="scp-grad-label scp-grad-label--on">Gradient On</span>
-        </button>
-      </div>
-      <div class="scp-grad-body" id="gradBody">
-        <!-- Live preview rectangle (landscape 2/3 + square mobile).
+            <span class="scp-grad-label scp-grad-label--off">Gradient Off</span>
+            <span class="scp-grad-label scp-grad-label--on">Gradient On</span>
+          </button>
+        </div>
+        <div class="scp-grad-body" id="gradBody">
+          <!-- Live preview rectangle (landscape 2/3 + square mobile).
              Moved inside the body so it only renders when the gradient
              panel is open \u2014 keeps the collapsed header tiny. -->
-        <div class="scp-fmt-row">
-          <div
-            class="scp-fmt-rect"
-            id="fmtRect"
-            data-tut-key="tut.gradBar"
-            data-tut="Gradient bar|Drag a stop to move it, click on the bar to add a new stop, click a stop to make it active and edit it on the wheel. Use + / − to add / remove the active stop."
-          >
-            <div class="scp-fmt-rect-fill" id="fmtRectFill"></div>
+          <div class="scp-fmt-row">
+            <div
+              class="scp-fmt-rect"
+              id="fmtRect"
+              data-tut-key="tut.gradBar"
+              data-tut="Gradient bar|Drag a stop to move it, click on the bar to add a new stop, click a stop to make it active and edit it on the wheel. Use + / − to add / remove the active stop."
+            >
+              <div class="scp-fmt-rect-fill" id="fmtRectFill"></div>
+            </div>
+            <div class="scp-fmt-mobile" id="fmtMobile"></div>
           </div>
-          <div class="scp-fmt-mobile" id="fmtMobile"></div>
-        </div>
 
-        <!-- Type + angle + stop controls. Replaces the old single-row
+          <!-- Type + angle + stop controls. Replaces the old single-row
              layout that lived in .scp-grad-header. -->
-        <div class="scp-ctrl-row" style="margin-top: 6px">
-          <button class="scp-type-btn active" id="typeBtnLin">Lin</button>
-          <button class="scp-type-btn" id="typeBtnRad">Rad</button>
-          <!-- Circular angle dial \u2014 from shared/smart-controls.js.
+          <div class="scp-ctrl-row" style="margin-top: 6px">
+            <button class="scp-type-btn active" id="typeBtnLin">Lin</button>
+            <button class="scp-type-btn" id="typeBtnRad">Rad</button>
+            <!-- Circular angle dial \u2014 from shared/smart-controls.js.
                size:30 matches the old bar's vertical footprint, snap=6
                magnetises the 8 cardinals. Emits a CustomEvent('change')
                with detail.value (0-359). -->
-          <smart-angle-dial
-            id="angleDial"
-            value="90"
-            size="30"
-            snap="6"
-            title="Drag to set gradient angle"
-          ></smart-angle-dial>
-          <span class="scp-angle-val" id="angleVal">90°</span>
-          <button class="scp-grad-small-btn" id="stopAdd" title="Add stop">
-            +
-          </button>
-          <button class="scp-grad-small-btn" id="stopDel" title="Remove stop">
-            &minus;
-          </button>
-          <span style="font-size: 8px; color: var(--cp-muted)" id="stopInfo"
-            >2 stops</span
-          >
+            <smart-angle-dial
+              id="angleDial"
+              value="90"
+              size="30"
+              snap="6"
+              title="Drag to set gradient angle"
+            ></smart-angle-dial>
+            <span class="scp-angle-val" id="angleVal">90°</span>
+            <button class="scp-grad-small-btn" id="stopAdd" title="Add stop">
+              +
+            </button>
+            <button class="scp-grad-small-btn" id="stopDel" title="Remove stop">
+              &minus;
+            </button>
+            <span style="font-size: 8px; color: var(--cp-muted)" id="stopInfo"
+              >2 stops</span
+            >
+          </div>
+
+          <div class="scp-grad-scroll-zone" id="gradScrollZone">
+            <div
+              style="
+                font-size: 9px;
+                color: var(--cp-muted);
+                margin-top: 3px;
+                margin-bottom: 2px;
+              "
+            >
+              Presets
+            </div>
+            <div
+              class="scp-presets-row"
+              id="gradPresets"
+              data-tut-key="tut.gradPresets"
+              data-tut="Gradient presets|Click any preset to load it into the gradient bar. Tap + Bar to save your current gradient to the palette on the left."
+            ></div>
+            <div
+              style="
+                font-size: 9px;
+                color: var(--cp-muted);
+                margin-top: 4px;
+                margin-bottom: 2px;
+              "
+            >
+              Harmony
+            </div>
+            <div
+              class="scp-harmony"
+              id="harmonyBtns"
+              data-tut-key="tut.harmony"
+              data-tut="Color harmony|Generate a gradient from the active color using classical color-theory rules: Complement, Analogous, Triadic, Split, Tetradic, Pentagon, Hexad or Mono."
+            ></div>
+          </div>
         </div>
 
-        <div class="scp-grad-scroll-zone" id="gradScrollZone">
-          <div
-            style="
-              font-size: 9px;
-              color: var(--cp-muted);
-              margin-top: 3px;
-              margin-bottom: 2px;
-            "
+        <!-- Always-visible actions: Copy CSS, Save, Load -->
+        <div
+          class="scp-grad-actions"
+          style="border-top: 1px solid var(--cp-border); padding: 5px 10px 4px"
+        >
+          <button
+            class="scp-grad-small-btn"
+            id="copyCSS"
+            data-tut-key="tut.copyCss"
+            data-tut="Copy CSS|Copy CSS to clipboard."
           >
-            Presets
-          </div>
-          <div
-            class="scp-presets-row"
-            id="gradPresets"
-            data-tut-key="tut.gradPresets"
-            data-tut="Gradient presets|Click any preset to load it into the gradient bar. Tap + Bar to save your current gradient to the palette on the left."
-          ></div>
-          <div
-            style="
-              font-size: 9px;
-              color: var(--cp-muted);
-              margin-top: 4px;
-              margin-bottom: 2px;
-            "
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <rect x="9" y="9" width="13" height="13" rx="2" />
+              <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+            </svg>
+            Copy CSS
+          </button>
+          <button
+            class="scp-grad-small-btn"
+            id="saveColorSet"
+            title="Save color set"
+            data-tut-key="tut.save"
+            data-tut="Save color set|Download palette as JSON."
           >
-            Harmony
-          </div>
-          <div
-            class="scp-harmony"
-            id="harmonyBtns"
-            data-tut-key="tut.harmony"
-            data-tut="Color harmony|Generate a gradient from the active color using classical color-theory rules: Complement, Analogous, Triadic, Split, Tetradic, Pentagon, Hexad or Mono."
-          ></div>
-          <div class="scp-grad-actions">
-            <button
-              class="scp-grad-small-btn"
-              id="copyCSS"
-              data-tut-key="tut.copyCss"
-              data-tut="Copy CSS|Copy a ready-to-paste CSS snippet for the current color (or full gradient) to your clipboard."
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
             >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <rect x="9" y="9" width="13" height="13" rx="2" />
-                <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
-              </svg>
-              Copy CSS
-            </button>
-            <button
-              class="scp-grad-small-btn"
-              id="saveColorSet"
-              title="Save color set"
-              data-tut-key="tut.save"
-              data-tut="Save color set|Download the entire saved palette + current gradient as a JSON file you can share or back up."
+              <path
+                d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"
+              />
+              <polyline points="17 21 17 13 7 13 7 21" />
+            </svg>
+            Save
+          </button>
+          <button
+            class="scp-grad-small-btn"
+            id="loadColorSet"
+            title="Load color set"
+            data-tut-key="tut.load"
+            data-tut="Load color set|Import a saved JSON color set."
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
             >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path
-                  d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"
-                />
-                <polyline points="17 21 17 13 7 13 7 21" />
-              </svg>
-              Save
-            </button>
-            <button
-              class="scp-grad-small-btn"
-              id="loadColorSet"
-              title="Load color set"
-              data-tut-key="tut.load"
-              data-tut="Load color set|Import a previously-saved JSON color set — replaces the current palette with the loaded swatches + gradients."
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-                <polyline points="7 10 12 15 17 10" />
-                <line x1="12" y1="15" x2="12" y2="3" />
-              </svg>
-              Load
-            </button>
-          </div>
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            Load
+          </button>
         </div>
       </div>
+      <!-- /scp-lower-scroll -->
+
       <input
         type="file"
         id="loadFileInput"
@@ -2617,6 +2624,8 @@
           panelOpen = false;
           overlay.classList.remove("open");
           scpEl.classList.remove("open");
+          if (typeof window._scpFxDeactivate === "function")
+            window._scpFxDeactivate();
           emitClose();
         }
 
@@ -3569,10 +3578,39 @@
         });
 
         /* ═══ Gradient section ═══ */
+        // Restore full gradient state (colors + type + angle + open/close) from last session
+        (function restoreGradState() {
+          try {
+            const saved = localStorage.getItem("scp-grad-data");
+            if (saved) {
+              const g = JSON.parse(saved);
+              if (g && Array.isArray(g.stops) && g.stops.length >= 2) {
+                S.grad.type  = g.type  || S.grad.type;
+                S.grad.angle = typeof g.angle === "number" ? g.angle : S.grad.angle;
+                S.grad.stops = g.stops;
+                S.grad.activeStop = 0;
+              }
+            }
+          } catch (_) {}
+          try {
+            if (localStorage.getItem("scp-grad-open") === "1") {
+              $("gradToggle").classList.add("open");
+              $("gradBody").classList.add("open");
+              $("gradToggle").setAttribute("aria-expanded", "true");
+              // Refresh UI to reflect restored gradient
+              renderGradient();
+              fullUpdate(false);
+            }
+          } catch (_) {}
+        })();
+
         $("gradToggle").addEventListener("click", () => {
           const open = $("gradToggle").classList.toggle("open");
           $("gradBody").classList.toggle("open", open);
           $("gradToggle").setAttribute("aria-expanded", String(open));
+          try {
+            localStorage.setItem("scp-grad-open", open ? "1" : "0");
+          } catch (_) {}
           // Toggling gradient on/off flips gradientActive in the
           // emitted payload \u2014 notify the host so it can re-render.
           emitColor();
@@ -4063,8 +4101,16 @@
         const runtimeConfig = window.SmartColorPickerConfig || {};
         const apiListeners = new Set();
 
+        const ALLOWED = [
+          "https://smdeltart.com",
+          /^https:\/\/smdeltart[a-z0-9-]*\.vercel\.app$/,
+          /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/,
+        ];
         function isAllowed(o) {
-          return true; // CDN widget — accept postMessage from any origin
+          if (o === window.location.origin || o === "null") return true;
+          return ALLOWED.some((a) =>
+            typeof a === "string" ? a === o : a.test(o),
+          );
         }
 
         function buildColorPayload() {
@@ -4095,9 +4141,20 @@
             palette: S.topColors,
           };
         }
+        // Save gradient stops/type/angle to localStorage so they survive re-opens
+        function saveGradState() {
+          try {
+            localStorage.setItem("scp-grad-data", JSON.stringify({
+              type:  S.grad.type,
+              angle: S.grad.angle,
+              stops: S.grad.stops,
+            }));
+          } catch (_) {}
+        }
 
         // Live preview: emits on every change so host can update target item in real-time
         function emitColor() {
+          saveGradState();
           const payload = buildColorPayload();
           apiListeners.forEach((fn) => {
             try {
@@ -4149,6 +4206,9 @@
           if (!window.parent || window.parent === window) return;
           const r = scpEl.getBoundingClientRect();
           if (!r.width || !r.height) return;
+          // .scp no longer has overflow-y:auto so r.height is the true
+          // rendered height — the lower-scroll section caps itself at 315px
+          // so no feedback loop can occur.
           window.parent.postMessage(
             {
               type: "smart-widget",
@@ -4162,10 +4222,19 @@
           );
         }
         // Re-emit whenever the panel resizes (gradient open, stops added…).
+        // Debounce via rAF so the initial ResizeObserver fire (before CSS is
+        // fully applied) doesn't report a partial/small size and trap the
+        // iframe in a too-small state.
+        let _emitSizeRaf;
         if (typeof ResizeObserver !== "undefined") {
-          const ro = new ResizeObserver(() => emitSize());
+          const ro = new ResizeObserver(() => {
+            cancelAnimationFrame(_emitSizeRaf);
+            _emitSizeRaf = requestAnimationFrame(emitSize);
+          });
           ro.observe(scpEl);
         }
+        // Guaranteed first-paint emission after two frames (layout settled).
+        requestAnimationFrame(() => requestAnimationFrame(emitSize));
 
         window.addEventListener("message", (e) => {
           if (!isAllowed(e.origin)) return;
