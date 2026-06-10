@@ -57,6 +57,10 @@
       body.scp-iframe-mode {
         overflow: hidden;
       }
+      /* In small embedded-iframe mode, hide the overlay backdrop —
+         the host app manages close/dismiss. The picker panel's own
+         close button still works via scp:close postMessage. */
+      body.scp-iframe-mode .scp-overlay { display: none !important; }
 
       /* ═══ Overlay (click-outside-to-close) ═══ */
       .scp-overlay {
