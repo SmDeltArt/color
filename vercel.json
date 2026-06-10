@@ -1,6 +1,9 @@
 ﻿{
   "cleanUrls": true,
   "trailingSlash": false,
+  "redirects": [
+    { "source": "/", "destination": "/picker", "permanent": false }
+  ],
   "rewrites": [
     { "source": "/picker", "destination": "/smart-color-picker.html" },
     { "source": "/demo",   "destination": "/demo.html" }
