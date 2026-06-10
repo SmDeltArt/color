@@ -6,14 +6,14 @@
   ],
   "rewrites": [
     { "source": "/picker", "destination": "/smart-color-picker.html" },
-    { "source": "/demo",   "destination": "/demo.html" }
+    { "source": "/demo", "destination": "/demo.html" }
   ],
   "headers": [
     {
       "source": "/:path*",
       "headers": [
-        { "key": "Access-Control-Allow-Origin",  "value": "*" },
-        { "key": "Content-Security-Policy",      "value": "frame-ancestors *" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Content-Security-Policy", "value": "frame-ancestors *" },
         { "key": "Cross-Origin-Resource-Policy", "value": "cross-origin" }
       ]
     }
