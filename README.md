@@ -50,11 +50,11 @@ This repo ships a `vercel.json` for direct Vercel deployment — same pattern as
 
 **Live deployments:**
 
-| Domain                          | Purpose                                         |
-| ------------------------------- | ----------------------------------------------- |
-| `color-iota-five.vercel.app`    | Vercel live URL ✅                              |
-| `color-picker.caddeltai.com`    | CAD-AI canonical CDN (pending Vercel domain setup) |
-| `color-picker.smdeltart.com`    | SmΔrt Collection alias (pending Vercel domain setup) |
+| Domain                       | Purpose                                              |
+| ---------------------------- | ---------------------------------------------------- |
+| `color-iota-five.vercel.app` | Vercel live URL ✅                                   |
+| `color-picker.caddeltai.com` | CAD-AI canonical CDN (pending Vercel domain setup)   |
+| `color-picker.smdeltart.com` | SmΔrt Collection alias (pending Vercel domain setup) |
 
 Routes once deployed:
 
@@ -72,7 +72,9 @@ and production uses the CDN:
 ```js
 // IMPORTANT: use window.location.origin (absolute path), not a relative path.
 // __actual_vs/ is the server root; color/ is served at /color/.
-const isLocal = ["localhost", "127.0.0.1", ""].includes(window.location.hostname);
+const isLocal = ["localhost", "127.0.0.1", ""].includes(
+  window.location.hostname,
+);
 const SCP_SRC = isLocal
   ? window.location.origin + "/color/smart-color-picker.html?embed=overlay" // absolute from server root
   : "https://color-iota-five.vercel.app/picker?embed=overlay"; // Vercel CDN
