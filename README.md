@@ -213,7 +213,7 @@ window.addEventListener("message", (e) => {
 
 **Inbound actions** (host → widget):
 
-- `scp:open` · data: `{ hex?, alpha?, theme?, palette?, appearance? }`
+- `scp:open` · data: `{ hex?, alpha?, theme?, palette?, appearance?, x?, y?, anchor? }`
 - `scp:close`
 - `scp:set` · data: `{ hex?, alpha? }`
 - `scp:setTheme` · data: `{ theme: "dark" | "light", palette?: PaletteOverrides, appearance?: HostAppearance }`
@@ -272,6 +272,19 @@ frame.contentWindow.postMessage({
 ```
 
 `appearance` is optional and contains no host content. The picker uses it only for transparency, blur, and native control color-scheme matching.
+
+To open beside the triggering control, send its viewport rectangle. The picker
+prefers the right side, then left, below, and above, while keeping itself within
+the visible viewport. `x` and `y` remain a backward-compatible fallback.
+
+```js
+const rect = trigger.getBoundingClientRect();
+const anchor = Object.fromEntries(
+  ["left", "top", "right", "bottom", "width", "height"].map((key) => [key, rect[key]]),
+);
+// Include { anchor, x: rect.left + rect.width / 2, y: rect.bottom }
+// in the scp:open data payload.
+```
 
 **Outbound actions** (widget → host):
 

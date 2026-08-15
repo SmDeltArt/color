@@ -825,13 +825,22 @@
         };
       }
 
-      // Open the picker just below the color button.
+      // Open the picker beside the color button, with x/y retained for
+      // compatibility with older deployed widget versions.
       function openPicker() {
         colorBtn.classList.add("active");
         const r = colorBtn.getBoundingClientRect();
         const payload = {
           x: r.left + r.width / 2,
           y: r.bottom,
+          anchor: {
+            left: r.left,
+            top: r.top,
+            right: r.right,
+            bottom: r.bottom,
+            width: r.width,
+            height: r.height,
+          },
           hex: state.hex,
           alpha: state.alpha,
           theme: detectTheme(),

@@ -2597,6 +2597,45 @@
           scpEl.style.top = top + "px";
         }
 
+        // Prefer a true side-by-side placement for button-triggered pickers.
+        // Fall back below/above when neither horizontal side has room.
+        function placeByAnchor(anchor) {
+          const gap = 10;
+          const margin = 8;
+          scpEl.style.transform = "none";
+          scpEl.style.left = "-9999px";
+          scpEl.style.top = "-9999px";
+          const pw = scpEl.offsetWidth || 320;
+          const ph = scpEl.offsetHeight || 420;
+          const vw = window.innerWidth;
+          const vh = window.innerHeight;
+          const a = {
+            left: Number(anchor.left) || 0,
+            top: Number(anchor.top) || 0,
+            right: Number(anchor.right) || 0,
+            bottom: Number(anchor.bottom) || 0,
+          };
+          let left;
+          let top;
+          if (a.right + gap + pw <= vw - margin) {
+            left = a.right + gap;
+            top = a.top;
+          } else if (a.left - gap - pw >= margin) {
+            left = a.left - gap - pw;
+            top = a.top;
+          } else if (a.bottom + gap + ph <= vh - margin) {
+            left = a.left;
+            top = a.bottom + gap;
+          } else {
+            left = a.left;
+            top = a.top - gap - ph;
+          }
+          left = Math.max(margin, Math.min(vw - pw - margin, left));
+          top = Math.max(margin, Math.min(vh - ph - margin, top));
+          scpEl.style.left = left + "px";
+          scpEl.style.top = top + "px";
+        }
+
         function openPanel(opts) {
           panelOpen = true;
           overlay.classList.add("open");
@@ -2609,6 +2648,10 @@
             scpEl.style.left = "2px";
             scpEl.style.top = "2px";
             userPositioned = true;
+          } else if (opts && opts.anchor) {
+            placeByAnchor(opts.anchor);
+            userPositioned = true;
+            constrainToScreen();
           } else if (opts && opts.x != null && opts.y != null) {
             placeAt(opts.x, opts.y);
             userPositioned = true;
