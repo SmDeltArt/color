@@ -2,7 +2,7 @@
 
 A self-contained, framework-free color picker widget — solid color, gradient editor, alpha, presets, palette save/load. Single HTML file, zero dependencies.
 
-- **Version:** 1.2.0
+- **Version:** 1.3.0
 - **Size:** ~1 file (HTML + inlined CSS/JS)
 - **License:** see repository
 
@@ -12,7 +12,7 @@ Click a link to launch the picker — the panel auto-opens in standalone mode:
 
 - 🚀 **[Vercel CDN (canonical)](https://color-picker.caddeltai.com/)** — root opens the color picker
 - 🌍 **[Vercel CDN (SmΔrt alias)](https://color-picker.smdeltart.com/)** — root opens the color picker
-- 📦 **[v1.2.0 pinned (Statically)](https://cdn.statically.io/gh/SmDeltArt/smart-color-picker/v1.2.0/smart-color-picker.html)** — tagged release
+- 📦 **v1.3.0 pinned CDN** — available after the `v1.3.0` Git tag is published
 - 🧪 **[Demo host page](https://color-picker.caddeltai.com/demo.html)** — picker embedded in a sample app
 
 ## Quick start
@@ -23,12 +23,12 @@ Just open `smart-color-picker.html` in any browser, or click the live links abov
 
 ### 2. Embed in your site (iframe)
 
-Use the GitHub Pages URL — open CORS, serves `text/html` correctly for iframes:
+Use the canonical Vercel URL for rolling-latest integrations:
 
 ```html
 <iframe
   src="https://color-picker.caddeltai.com/smart-color-picker.html?embed=overlay"
-  style="border:0;width:420px;height:560px;background:transparent"
+  style="position:fixed;inset:0;border:0;width:100vw;height:100dvh;background:transparent"
   allowtransparency="true"
   allow="clipboard-write"
 ></iframe>
@@ -54,7 +54,12 @@ This repo ships a `vercel.json` for direct Vercel deployment — same pattern as
 
 1. **Connect** this repo to a Vercel project (no _Root Directory_ config needed).
 2. **Assign** custom domains in the Vercel dashboard.
-3. **Done.** The `vercel.json` handles CORS and `frame-ancestors *`.
+3. **Done.** The `vercel.json` handles CORS, cross-origin isolation,
+   `frame-ancestors`, browser revalidation, and separate Vercel CDN caching.
+
+The branded custom domains and the `vercel.app` URL are aliases of one Vercel
+project. Use a tagged external CDN or a bundled local copy as the independent
+fallback. Never present aliases of the same deployment as failover hosts.
 
 **Live deployments:**
 
@@ -208,10 +213,10 @@ window.addEventListener("message", (e) => {
 
 **Inbound actions** (host → widget):
 
-- `scp:open` · data: `{ hex?, alpha?, theme? }`
+- `scp:open` · data: `{ hex?, alpha?, theme?, palette?, appearance? }`
 - `scp:close`
 - `scp:set` · data: `{ hex?, alpha? }`
-- `scp:setTheme` · data: `{ theme: "dark" | "light", palette?: PaletteOverrides }`
+- `scp:setTheme` · data: `{ theme: "dark" | "light", palette?: PaletteOverrides, appearance?: HostAppearance }`
 - `scp:get` (triggers a `scp:color` emit)
 - `scp:selectStop` · data: `{ index?: number }` or `{ pos?: number }` (0–100, picks nearest stop) — only meaningful when the gradient editor is open
 - `scp:setGradient` · data: `{ open?: boolean, type?: "linear" | "radial", angle?: 0..360 }` — toggle the gradient editor section, change geometry from the host UI
@@ -235,6 +240,38 @@ window.addEventListener("message", (e) => {
 ```
 
 You can also pass `palette` inside `scp:open` data to apply at open time. Reset by sending `scp:setTheme` with an empty `palette: {}` (clears overrides; built-in dark/light tokens take over).
+
+### Host transparency and theme detection
+
+A cross-origin iframe cannot read its parent page's computed styles. The host bridge should detect them and send a small appearance profile; this avoids unsafe DOM access and works from localhost, Vercel, or any custom domain.
+
+```js
+const style = getComputedStyle(document.querySelector(".app-panel"));
+const alpha = Number(style.backgroundColor.match(/[\d.]+(?=\))/)?.[0] ?? 1);
+
+frame.contentWindow.postMessage({
+  type: "smart-widget",
+  action: "scp:open",
+  data: {
+    theme: document.documentElement.dataset.theme || "dark",
+    palette: {
+      bg: style.backgroundColor,
+      surface: style.backgroundColor,
+      text: style.color,
+      border: style.borderColor,
+      accent: getComputedStyle(document.documentElement).getPropertyValue("--accent") || "#6366f1",
+    },
+    appearance: {
+      transparent: alpha < 0.98,
+      surfaceAlpha: alpha,
+      backdropFilter: style.backdropFilter || style.webkitBackdropFilter || "none",
+      colorScheme: getComputedStyle(document.documentElement).colorScheme,
+    },
+  },
+}, pickerOrigin);
+```
+
+`appearance` is optional and contains no host content. The picker uses it only for transparency, blur, and native control color-scheme matching.
 
 **Outbound actions** (widget → host):
 
@@ -366,6 +403,14 @@ cells, and execCommand-based document text coloring.
 
 ## Changelog
 
+### v1.3.0
+
+- Full-viewport overlay embedding without a host frame or duplicate header
+- Host appearance profile for light/dark, translucent surfaces and backdrop blur
+- COEP/CORP-compatible Vercel headers for cross-origin-isolated hosts
+- Browser revalidation plus edge-only stale-while-revalidate caching
+- Expanded bridge manifest for gradient commands
+
 ### v1.2.0
 
 - ✨ Tutorial tips overlay (toggle from help popover) with `data-tut` /
@@ -389,10 +434,24 @@ cells, and execCommand-based document text coloring.
 For production embeds, **always pin a tag**:
 
 ```
-https://cdn.statically.io/gh/SmDeltArt/smart-color-picker/v1.2.0/smart-color-picker.html
+https://cdn.statically.io/gh/SmDeltArt/smart-color-picker/v1.3.0/smart-color-picker.html
 ```
 
 (Statically returns `text/html` and supports tag pinning — preferred over
 jsDelivr for direct page / iframe usage.)
 
 Using `@latest` or no tag will pull the most recent commit and may break.
+
+## Replacing native color inputs
+
+Prefer an explicit opt-in such as `input[type="color"][data-smart-color-picker]`
+instead of automatically hijacking every native picker. A native color input can
+store only an opaque sRGB color, while SmΔrt Color Picker can return alpha and
+gradients. Keep the original input as the form-compatible fallback, open the
+widget from its click, and write an opaque selection back to `input.value`.
+Store richer CSS in a sibling hidden input or in application state.
+
+This preserves accessibility, HTML form submission, browser fallback, and
+existing `input`/`change` listeners while allowing gradual adoption. Controls
+that set CSS `color` should normally disable gradients; controls that set a
+background can accept the complete picker payload.
