@@ -10,10 +10,10 @@ A self-contained, framework-free color picker widget — solid color, gradient e
 
 Click a link to launch the picker — the panel auto-opens in standalone mode:
 
-- 🚀 **[Vercel CDN (canonical)](https://color-picker.caddeltai.com/)** — `color-picker.caddeltai.com`
-- 🌍 **[Vercel CDN (SmΔrt alias)](https://color-picker.smdeltart.com/)** — `color-picker.smdeltart.com`
+- 🚀 **[Vercel CDN (canonical)](https://color-picker.caddeltai.com/)** — root opens the color picker
+- 🌍 **[Vercel CDN (SmΔrt alias)](https://color-picker.smdeltart.com/)** — root opens the color picker
 - 📦 **[v1.2.0 pinned (Statically)](https://cdn.statically.io/gh/SmDeltArt/smart-color-picker/v1.2.0/smart-color-picker.html)** — tagged release
-- 🧪 **[Demo host page](https://color-picker.caddeltai.com/demo)** — picker embedded in a sample app (`color-picker.caddeltai.com/demo`)
+- 🧪 **[Demo host page](https://color-picker.caddeltai.com/demo.html)** — picker embedded in a sample app
 
 ## Quick start
 
@@ -27,11 +27,19 @@ Use the GitHub Pages URL — open CORS, serves `text/html` correctly for iframes
 
 ```html
 <iframe
-  src="https://smdeltart.github.io/smart-color-picker/smart-color-picker.html?embed=overlay"
+  src="https://color-picker.caddeltai.com/smart-color-picker.html?embed=overlay"
   style="border:0;width:420px;height:560px;background:transparent"
   allowtransparency="true"
+  allow="clipboard-write"
 ></iframe>
 ```
+
+If the host page is cross-origin isolated (`Cross-Origin-Embedder-Policy`),
+deploy this repository's current `vercel.json` so the picker response includes
+COEP/CORP. As a temporary compatibility bridge in Chromium/Edge, add the
+`credentialless` attribute to the iframe. This widget does not use
+`SMRT_API_BASE_URL`; consumers may instead expose a dedicated
+`window.SMRT_COLOR_PICKER_URL` override.
 
 For local dev, use the relative same-origin URL instead (see isLocal pattern below).
 
@@ -46,23 +54,23 @@ This repo ships a `vercel.json` for direct Vercel deployment — same pattern as
 
 1. **Connect** this repo to a Vercel project (no _Root Directory_ config needed).
 2. **Assign** custom domains in the Vercel dashboard.
-3. **Done.** The `vercel.json` handles clean URLs, CORS, and `frame-ancestors *`.
+3. **Done.** The `vercel.json` handles CORS and `frame-ancestors *`.
 
 **Live deployments:**
 
 | Domain                       | Purpose                                              |
 | ---------------------------- | ---------------------------------------------------- |
-| `color-iota-five.vercel.app` | Vercel live URL ✅                                   |
+| `color-iota-five.vercel.app` | Vercel live URL ✅ **use in code now**               |
 | `color-picker.caddeltai.com` | CAD-AI canonical CDN (pending Vercel domain setup)   |
 | `color-picker.smdeltart.com` | SmΔrt Collection alias (pending Vercel domain setup) |
 
 Routes once deployed:
 
-| URL       | Serves                    |
-| --------- | ------------------------- |
-| `/`       | `smart-color-picker.html` |
-| `/picker` | `smart-color-picker.html` |
-| `/demo`   | `demo.html`               |
+| URL                        | Serves                                      |
+| -------------------------- | ------------------------------------------- |
+| `/`                        | `index.html` redirects to the color picker  |
+| `/smart-color-picker.html` | `smart-color-picker.html`                   |
+| `/demo.html`               | `demo.html`                                 |
 
 ### Embed from any SmΔrt app (isLocal pattern)
 
@@ -70,15 +78,22 @@ Use the same pattern as the api-settings bridge so local dev works without CORS
 and production uses the CDN:
 
 ```js
-// IMPORTANT: use window.location.origin (absolute path), not a relative path.
-// __actual_vs/ is the server root; color/ is served at /color/.
+// Canonical production URL: color-picker.caddeltai.com (stable — never changes).
+// Local path is relative to the consuming app; adjust if not in private/widgets/.
 const isLocal = ["localhost", "127.0.0.1", ""].includes(
   window.location.hostname,
 );
 const SCP_SRC = isLocal
-  ? window.location.origin + "/color/smart-color-picker.html?embed=overlay" // absolute from server root
-  : "https://color-iota-five.vercel.app/picker?embed=overlay"; // Vercel CDN
-// Once custom domains are set up: use https://color-picker.caddeltai.com/picker
+  ? window.location.origin + "/color/smart-color-picker.html" // absolute from server root
+  : "https://color-iota-five.vercel.app/smart-color-picker.html"; // Vercel CDN
+```
+
+For overlay mode (SVG editor style):
+
+```js
+const SCP_SRC = isLocal
+  ? window.location.origin + "/color/smart-color-picker.html?embed=overlay"
+  : "https://color-iota-five.vercel.app/smart-color-picker.html?embed=overlay";
 ```
 
 Then set the iframe src:
@@ -90,6 +105,11 @@ Then set the iframe src:
 </script>
 ```
 
+> **Why `color-picker.caddeltai.com` and not the `.vercel.app` URL?**  
+> The custom domain is stable — it never changes even if the Vercel project is renamed.
+> Always use the custom domain in production code. The `.vercel.app` URL is only
+> useful as a fallback during initial setup before the custom domain is activated.
+
 ### Security note
 
 `frame-ancestors *` and open CORS are intentional for a public CDN widget — the
@@ -100,12 +120,18 @@ color picker holds no sensitive data. The `postMessage` protocol uses the
 
 ### 3. Hosting / CDN options
 
-| Source                  | URL pattern                                                                               | Renders HTML?                                                                         |
-| ----------------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| **GitHub Pages**        | `https://smdeltart.github.io/smart-color-picker/smart-color-picker.html`                  | ✅ yes (recommended)                                                                  |
-| **Statically** (pinned) | `https://cdn.statically.io/gh/SmDeltArt/smart-color-picker/<tag>/smart-color-picker.html` | ✅ yes                                                                                |
-| jsDelivr (asset only)   | `https://cdn.jsdelivr.net/gh/SmDeltArt/smart-color-picker@<tag>/smart-color-picker.html`  | ❌ served as `text/plain` — fine for `fetch()`, **not** for direct viewing or iframes |
-| **Vercel CDN** ✅ live  | `https://color-picker.caddeltai.com/` · `https://color-picker.smdeltart.com/`             | ✅ yes — `frame-ancestors *`, open CORS                                               |
+| Source                  | URL pattern                                                                                                                          | Renders HTML?                                                                         |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------- |
+| **GitHub Pages**        | `https://smdeltart.github.io/smart-color-picker/smart-color-picker.html`                                                             | ✅ yes (recommended)                                                                  |
+| **Statically** (pinned) | `https://cdn.statically.io/gh/SmDeltArt/smart-color-picker/<tag>/smart-color-picker.html`                                            | ✅ yes                                                                                |
+| jsDelivr (asset only)   | `https://cdn.jsdelivr.net/gh/SmDeltArt/smart-color-picker@<tag>/smart-color-picker.html`                                             | ❌ served as `text/plain` — fine for `fetch()`, **not** for direct viewing or iframes |
+| **Vercel CDN** ✅ live  | `https://color-picker.caddeltai.com/smart-color-picker.html` · `https://color-picker.smdeltart.com/smart-color-picker.html` | ✅ yes — `frame-ancestors *`, open CORS                                               |
+
+The two branded domains and `color-iota-five.vercel.app` currently point to the
+same Vercel project, so they are aliases rather than independent fallbacks. Use
+GitHub Pages as the separate-origin fallback. For production stability, publish
+versioned paths/tags and keep the unversioned custom-domain URL as the rolling
+latest release.
 
 > **Why not jsDelivr for iframes?** jsDelivr deliberately serves HTML files
 > from `/gh/` paths as `text/plain` to discourage abuse. Use it for
