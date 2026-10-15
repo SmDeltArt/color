@@ -9,7 +9,7 @@ The widget owns panel dragging, centering, viewport bounds and gradient expansio
 ```html
 <iframe id="picker" title="SmΔrt Color Picker"
   src="/assets/widgets/color/smart-color-picker.html?embed=overlay"
-  style="position:fixed;inset:0;width:100vw;height:100dvh;border:0;background:transparent;color-scheme:normal;z-index:10000"
+  style="position:fixed;inset:0;width:100vw;height:100dvh;border:0;background:transparent;color-scheme:only light;z-index:10000"
   allow="clipboard-write"></iframe>
 ```
 
@@ -58,3 +58,7 @@ that iframe CSS alone can change a cross-origin document's background.
 ```
 
 Give the assistant repository access or paste this guide plus the bridge/picker files. A model cannot inspect private code from a URL alone. For local Ollama, provide those files in the coding client's context and request a diff first; model choice does not change this embedding contract.
+
+## Canvas colour-scheme regression
+
+A transparent iframe can still paint an opaque canvas when its used colour scheme differs from the embedded document. For this widget keep `color-scheme: only light` on BOTH the iframe element and the widget html root. The picker panel can independently use dark or light theme tokens. Avoid forcing only one side to dark or relying on `background:transparent` alone. A Chromium fixture reproduces the white canvas with mismatched schemes and verifies outside-panel pixel equality after alignment in dark/light desktop and mobile-sized hosts. `only light` also opts the canvas out of automatic darkening. Topic.earth has a regression test in tools/check-picker-transparency.cjs.
