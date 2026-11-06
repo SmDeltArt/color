@@ -19,7 +19,7 @@ tb.recenter,Recenter,Recentrer,,,,,,,,
 tb.recenter.tip,Bring panel back to the center,Recentrer le panneau,,,,,,,,
 # ── Wheel corner buttons ───────────────────────────────────────────
 corner.pipette,Eyedropper,Pipette,,,,,,,,
-corner.gradientPipette,Gradient eyedropper,Pipette de dégradé,,,,,,,,
+corner.gradientDirect,Direct gradient eyedropper,Pipette de dégradé directe,,,,,,,,\ncorner.gradientDirect.tip,Pick gradient from selected SVG or CSS in host app,Choisir un dégradé SVG ou CSS dans l'application hôte,,,,,,,,\ntut.gradientDirect,Direct gradient eyedropper|Select an SVG or CSS gradient in the host app; image gradients require raster sampling.,Pipette directe|Sélectionnez un dégradé SVG ou CSS dans l'application; les images nécessitent un échantillonnage.,,,,,,,,\ncorner.gradientPipette,Gradient eyedropper,Pipette de dégradé,,,,,,,,
 corner.gradientPipette.tip,Sample an image gradient,Échantillonner un dégradé dans une image,,,,,,,,
 tut.gradientPipette,Gradient eyedropper|Choose a local image and drag a line across its gradient to estimate editable stops and direction.,Pipette de dégradé|Choisissez une image locale puis tracez une ligne pour estimer les couleurs et la direction du dégradé.,,,,,,,,
 corner.pipette.tip,Pick a color from the screen,Sélectionner une couleur à l'écran,,,,,,,,
