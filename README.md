@@ -16,13 +16,30 @@ Both eyedroppers live entirely inside `smart-color-picker.html`; there are no se
 
 Serve this folder with a static HTTP server and open `smart-color-picker.html`. Keep `smart-colorset.json` and `smart-color-picker.i18n.csv` beside it. `demo.html` is an example host. Some optional shared controls use external resources; verify offline requirements in your consumer.
 
-Hosted entry: https://color-iota-five.vercel.app/smart-color-picker.html
+Primary branded entry: https://color.smdeltart.com/smart-color-picker.html
+
+Overlay entry: https://color.smdeltart.com/smart-color-picker.html?embed=overlay
+
+GitHub Pages alternative (where enabled): https://smdeltart.github.io/color/smart-color-picker.html?embed=overlay
+
+The repository includes `color-picker-overlay.js`: an optional, host-page launcher for banners using `data-scp-overlay` that opens the picker in the **current page** as a transparent iframe overlay. Its SVG/PNG banner image remains passive; it is the host page that handles the click. A regular SVG hyperlink falls back to opening the standalone picker.
 
 For a full-screen iframe, append `?embed=overlay`. The iframe remains full-screen while the picker moves inside it. Its outside area is transparent and catches outside clicks to close. The host receives live colour/gradient messages; see the integration guide for validation and lifecycle handling.
 
+## Banner overlay integration
+
+```html
+<a href="https://color.smdeltart.com/smart-color-picker.html" data-scp-overlay>
+  <img src="/images/color-picker-banner.svg" alt="Open SmΔrt Color Picker">
+</a>
+<script defer src="https://color.smdeltart.com/color-picker-overlay.js"></script>
+```
+
+The launcher validates message origin and iframe source, intercepts normal left-clicks only, and preserves regular navigation for modifier-clicks or without JavaScript. For WordPress, ensure your page allows the script, and allow embedding via your site's framing/CSP policies. To embed on another domain, the picker's parent-origin allowlist must allow it. Test live origins before deploying.
+
 ## Deployment
 
-`vercel.json` configures the static deployment and response headers. Verify the actual deployment, HTML Content-Type, framing headers and allowed parent origins before embedding from a new site. Branded domains require configured DNS/project aliases; aliases of one project are not independent failover hosts. Use a reviewed local copy for a pinned integration, or publish and verify a version before documenting a versioned URL. GitHub raw files and asset CDNs are not interchangeable with HTML hosting.
+`vercel.json` configures the static deployment and response headers. Verify the actual deployment, HTML Content-Type, framing headers and allowed parent origins before embedding from a new site. The branded hostname is the intended public address; verify DNS and Vercel routing before advertising it. Branded domains require configured DNS/project aliases; aliases of one project are not independent failover hosts. Use a reviewed local copy for a pinned integration, or publish and verify a version before documenting a versioned URL. GitHub raw files and asset CDNs are not interchangeable with HTML hosting.
 
 ## API
 
