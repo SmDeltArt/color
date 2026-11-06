@@ -1,5 +1,12 @@
 # Transparent full-screen embedding
 
+**Primary URL:** `https://color.smdeltart.com/smart-color-picker.html?embed=overlay`
+
+**GitHub Pages fallback (if enabled):** `https://smdeltart.github.io/color/smart-color-picker.html?embed=overlay` (the path must include `/color/` and `.html`).
+
+**Banner-launch helper:** `https://color.smdeltart.com/color-picker-overlay.js`, provided in this repository. Include it in the **host page** and use an anchor with `data-scp-overlay`. A clickable SVG `<a>` cannot inject an overlay into the parent HTML when rendered as `<img>`; the host page must intercept the banner link.
+
+
 ## Contract
 
 Use `smart-color-picker.html?embed=overlay` in a full-viewport iframe. The iframe, its ancestors (including any dialog/backdrop), and the widget's html/body must have transparent backgrounds. Overlay mode keeps a transparent click-outside layer; only the picker panel paints a surface. Panel alpha and the alpha of the selected colour are separate settings.
@@ -39,7 +46,9 @@ The 🌈 image sampler is also built directly into `smart-color-picker.html`. It
 
 - topic.earth intentionally uses a pinned same-origin copy, with its JSON/CSV companions. It needs no remote host. Keep its origin/source checks and local adaptations when syncing.
 - Studio uses a hosted URL; its bridge is `studio/public/app/src/color-picker-bridge.js` in SmDeltArt/private. Studio's cross-origin isolation may require compatible COEP/CORP responses or a public credentialless iframe.
-- Hosted entry: `https://color-iota-five.vercel.app/smart-color-picker.html?embed=overlay`. Verify deployment/domain status before switching to a branded alias. Aliases of one Vercel project are not independent fallbacks.
+- Primary branded entry: `https://color.smdeltart.com/smart-color-picker.html?embed=overlay`. Verify DNS, deployment and framing behavior before publishing.
+- GitHub Pages alternative: `https://smdeltart.github.io/color/smart-color-picker.html?embed=overlay` when GitHub Pages is enabled.
+- The repository's `color-picker-overlay.js` provides an optional drop-in banner launcher. It opens a transparent full-screen iframe in the current page, posts `scp:open` on iframe load, and closes on `scp:close`/Escape. Preserve the host's existing modal management if it already integrates the picker. Aliases of one Vercel project are not independent fallbacks.
 - Use an actual HTML host for iframe documents. GitHub repository/raw pages and asset CDNs serving `text/plain` are not iframe application hosts. Check Content-Type, redirects and framing headers. GitHub Pages, if enabled, uses the repository name `color`, not `smart-color-picker`.
 - The current upstream bridge restricts allowed parent origins; inspect/update its allowlist for a new consumer. CORS does not grant postMessage access or make backgrounds transparent.
 - Deploy/cache changes matter: update the consumer service worker precache/version for bundled copies. A query parameter alone does not replace an old service-worker-cached module.
