@@ -25,6 +25,10 @@ Solid results contain `rgba: {r,g,b,a}`: convert to `rgba(r,g,b,a)` rather than 
 
 Theme/palette/appearance messages style the PANEL. They must never paint the iframe canvas. `scp:setGradient` restores gradient configuration; inspect the current implementation before relying on optional fields.
 
+## Image gradient sampling
+
+The picker includes `smart-gradient-eyedropper.js` as a same-directory ES module imported on startup. Copy and serve it alongside `smart-color-picker.html` when using a pinned/local integration, including offline/PWA precache lists. The 🌈 corner button opens a local image picker inside the iframe; it cannot sample outside its frame or read arbitrary screen content. The analysis produces estimated linear-gradient settings and sends them through the existing `scp:color` payload when applied. Do not add a new message action unless consumers require it.
+
 ## Local copy or hosted HTML
 
 - topic.earth intentionally uses a pinned same-origin copy, with its JSON/CSV companions. It needs no remote host. Keep its origin/source checks and local adaptations when syncing.
