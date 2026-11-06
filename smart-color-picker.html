@@ -2255,6 +2255,8 @@
 
           <!-- Inline sampler lives inside the scrollable gradient section. -->
           <div id="scpGradientSamplerMount"></div>
+          <div id="scpGradientDirectInfo" hidden role="status" aria-live="polite"
+            style="margin:4px 0;padding:5px;border:1px solid var(--cp-border);border-radius:5px;color:var(--cp-muted);font-size:10px"></div>
 
           <!-- Type + angle + stop controls. Replaces the old single-row
              layout that lived in .scp-grad-header. -->
@@ -3629,7 +3631,14 @@ function initGradientEyedropper({ trigger, onApply }) {
           fullUpdate();
           return true;
         }
+        function setDirectGradientInfo(message) {
+          const info = $("scpGradientDirectInfo");
+          info.textContent = message || "";
+          info.hidden = !message;
+          if (message) info.scrollIntoView({block:"nearest"});
+        }
         $("cornerDirectGradient").addEventListener("click", () => {
+          setDirectGradientInfo("🎯 Select a gradient in the connected host SVG/CSS preview or tree.");
           // Direct host selection also uses the same inline gradient area.
           $("gradToggle").classList.add("open");
           $("gradBody").classList.add("open");
@@ -3639,8 +3648,7 @@ function initGradientEyedropper({ trigger, onApply }) {
             window._scpInlineGradientSampler.close();
           renderGradient(); emitColor();
           if (window.parent === window || !requestOrigin || requestOrigin === "null") {
-            showTooltip($("cornerDirectGradient"),
-              "Host integration required; 🌈 can sample an image");
+            setDirectGradientInfo("Direct inspection requires a connected host. Use 🌈 to sample a local image.");
             return;
           }
           gradientPickRequest = {
@@ -3653,7 +3661,7 @@ function initGradientEyedropper({ trigger, onApply }) {
             action: "scp:gradient-pick-request",
             data: {requestId: gradientPickRequest.id, source: "direct"}
           }, requestOrigin);
-          showTooltip($("cornerDirectGradient"), "Select a gradient in the host application");
+          setDirectGradientInfo("🎯 Waiting for a selection in the host application…");
         });
         $("cornerAdd").addEventListener("click", () => addCurrentToTop());
         $("cornerSwap").addEventListener("click", () => {
@@ -4540,12 +4548,9 @@ function initGradientEyedropper({ trigger, onApply }) {
             gradientPickRequest = null;
             if (msg.data?.gradientData) {
               const ok = applyInspectedGradient(msg.data.gradientData);
-              showTooltip($("cornerDirectGradient"),
-                ok ? "Gradient imported — review editable stops"
-                   : "Unsupported gradient; use the image sampler");
+              setDirectGradientInfo(ok ? "Gradient imported — review editable stops below." : "Unsupported gradient; use 🌈 to sample an image.");
             } else {
-              showTooltip($("cornerDirectGradient"),
-                msg.data?.error || "No supported gradient detected");
+              setDirectGradientInfo(typeof msg.data?.error === "string" ? msg.data.error.slice(0, 160) : "No supported gradient detected.");
             }
             return;
           }
