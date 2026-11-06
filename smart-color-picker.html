@@ -447,6 +447,7 @@
       .scp-corner { font-size: 15px; line-height: 1; color: var(--cp-text); }
       .scp-corner-emoji { pointer-events: none; user-select: none; }
       .scp-corner-gradient { top: -7px; left: 98px; }
+      .scp-corner-direct { top: 203px; left: 98px; }
       .scp-gradient-sampler[hidden] { display: none !important; }
       .scp-gradient-sampler {
         position: fixed; inset: 0; z-index: 100010; display: grid;
@@ -2094,6 +2095,14 @@
             data-tut-key="tut.gradientPipette"
             data-tut="Gradient eyedropper|Select a local PNG, JPEG, WebP or SVG, then drag a line across the gradient. Up to 8 stops and a linear angle are estimated from pixels and can be edited below."
           ><span class="scp-corner-emoji" aria-hidden="true">🌈</span></button>
+          <button
+            class="scp-corner scp-corner-direct"
+            id="cornerDirectGradient"
+            title="Direct gradient eyedropper — select an existing SVG, CSS or image element"
+            aria-label="Direct gradient eyedropper"
+            data-tut-key="tut.gradientDirect"
+            data-tut="Direct gradient eyedropper|Select an existing object in the host app or SVG tree. SVG/CSS gradients can be read from their definitions; raster gradients need a sampled line. Cross-origin hosts must implement the scp:gradient-pick-request bridge."
+          ><span class="scp-corner-emoji" aria-hidden="true">🎯</span></button>
           <div
             class="scp-bw-dot"
             id="bwBlack"
@@ -3430,6 +3439,54 @@
             $("cornerGradientPipette").disabled = true;
           });
 
+        // Direct selection is owned by the host when the picker is embedded.
+        // The picker cannot inspect a cross-origin parent DOM by itself.
+        let gradientPickRequest = null;
+        function applyInspectedGradient(data) {
+          if (!data || (data.type !== "linear" && data.type !== "radial") ||
+              !Array.isArray(data.stops) || data.stops.length < 2 ||
+              data.stops.length > 8) return false;
+          const stops = [];
+          for (const stop of data.stops) {
+            const rgb = typeof stop.hex === "string" ? hex2rgb(stop.hex) : null;
+            if (!rgb || !Number.isFinite(Number(stop.pos)) ||
+                !Number.isFinite(Number(stop.a ?? 1))) return false;
+            const [h, s, v] = rgb2hsv(...rgb);
+            stops.push({pos: clamp(Number(stop.pos), 0, 100), h, s, v,
+              a: clamp(Number(stop.a ?? 1), 0, 1)});
+          }
+          S.grad.type = data.type;
+          S.grad.angle = Number.isFinite(Number(data.angle))
+            ? clamp(Number(data.angle), 0, 360) : 90;
+          S.grad.stops = stops.sort((a, b) => a.pos - b.pos);
+          S.grad.activeStop = 0;
+          const first = S.grad.stops[0];
+          S.h = first.h; S.s = first.s; S.v = first.v; S.a = first.a;
+          $("gradToggle").classList.add("open");
+          $("gradBody").classList.add("open");
+          $("gradToggle").setAttribute("aria-expanded", "true");
+          try { localStorage.setItem("scp-grad-open", "1"); } catch {}
+          fullUpdate();
+          return true;
+        }
+        $("cornerDirectGradient").addEventListener("click", () => {
+          if (window.parent === window || !requestOrigin || requestOrigin === "null") {
+            showTooltip($("cornerDirectGradient"),
+              "Select an SVG/CSS object through an integrated host (bridge required)");
+            return;
+          }
+          gradientPickRequest = {
+            id: crypto.randomUUID?.() || String(Date.now()) + "-" + Math.random(),
+            origin: requestOrigin,
+            expires: Date.now() + 60_000
+          };
+          window.parent.postMessage({
+            type: "smart-widget",
+            action: "scp:gradient-pick-request",
+            data: {requestId: gradientPickRequest.id, source: "direct"}
+          }, requestOrigin);
+          showTooltip($("cornerDirectGradient"), "Select a gradient in the host application");
+        });
         $("cornerAdd").addEventListener("click", () => addCurrentToTop());
         $("cornerSwap").addEventListener("click", () => {
           if (!S.bg) {
@@ -4306,6 +4363,24 @@
           const msg = e.data;
           if (!msg || msg.type !== "smart-widget") return;
 
+          // Accept only a matching pending host response from our parent frame.
+          if (msg.action === "scp:gradient-pick-result") {
+            if (e.source !== window.parent || !gradientPickRequest ||
+                e.origin !== gradientPickRequest.origin ||
+                msg.data?.requestId !== gradientPickRequest.id ||
+                Date.now() > gradientPickRequest.expires) return;
+            gradientPickRequest = null;
+            if (msg.data?.gradientData) {
+              const ok = applyInspectedGradient(msg.data.gradientData);
+              showTooltip($("cornerDirectGradient"),
+                ok ? "Gradient imported — review editable stops"
+                   : "Unsupported gradient; use the image sampler");
+            } else {
+              showTooltip($("cornerDirectGradient"),
+                msg.data?.error || "No supported gradient detected");
+            }
+            return;
+          }
           if (msg.action === "scp:open") {
             requestOrigin = e.origin;
             if (msg.data && msg.data.theme) {
