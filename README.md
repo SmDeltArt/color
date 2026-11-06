@@ -4,6 +4,12 @@ A standalone HTML colour picker with solid colours, alpha, linear/radial gradien
 
 **[Integration guide and ready-to-paste LLM prompt](EMBEDDING.md)** — start here for local copies, hosted iframe use and transparent full-screen overlays.
 
+## Gradient eyedropper (image sampling)
+
+The five high-visibility emoji wheel actions are 💉 single-color eyedropper, ➕ save color, 🔄 swap colors, 🎲 random color, and 🌈 gradient eyedropper. The 🌈 action opens a local-image sampler: choose a PNG, JPEG, WebP or SVG, then draw a line over the gradient. It estimates the angle and up to eight stops and loads them into the existing editable linear-gradient panel. The tutorial hover mode describes this workflow.
+
+This is **pixel-based approximation**, not exact SVG/CSS-gradient recovery, and it cannot pick an arbitrary area of the screen or a cross-origin parent iframe. Alpha and hidden source stops cannot reliably be inferred from flattened pixels. Image files stay local in the browser. The sampler is implemented in `smart-gradient-eyedropper.js`, which must be deployed/copied beside `smart-color-picker.html`.
+
 ## Run
 
 Serve this folder with a static HTTP server and open `smart-color-picker.html`. Keep `smart-colorset.json` and `smart-color-picker.i18n.csv` beside it. `demo.html` is an example host. Some optional shared controls use external resources; verify offline requirements in your consumer.
