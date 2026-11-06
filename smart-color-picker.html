@@ -443,6 +443,39 @@
         background: rgba(99, 102, 241, 0.1);
       }
 
+      /* Emoji actions remain legible at compact wheel sizes. */
+      .scp-corner { font-size: 15px; line-height: 1; color: var(--cp-text); }
+      .scp-corner-emoji { pointer-events: none; user-select: none; }
+      .scp-corner-gradient { top: -7px; left: 98px; }
+      .scp-gradient-sampler[hidden] { display: none !important; }
+      .scp-gradient-sampler {
+        position: fixed; inset: 0; z-index: 100010; display: grid;
+        place-items: center; padding: 12px; background: rgba(0, 0, 0, .7);
+      }
+      .scp-gradient-sampler-panel {
+        width: min(720px, 100%); max-height: 95dvh; overflow: auto;
+        box-sizing: border-box; padding: 14px; border-radius: 12px;
+        border: 1px solid var(--cp-border); background: var(--cp-panel);
+        color: var(--cp-text); box-shadow: 0 12px 40px rgba(0, 0, 0, .4);
+      }
+      .scp-gradient-sampler-header, .scp-gradient-sampler footer {
+        display: flex; gap: 8px; align-items: center; justify-content: space-between;
+      }
+      .scp-gradient-sampler-panel p { margin: 8px 0; font-size: 12px; line-height: 1.5; }
+      .scp-gradient-sampler-panel input { max-width: 100%; margin: 8px 0; }
+      .scp-gradient-sampler-panel canvas {
+        display: block; max-width: 100%; height: auto; max-height: 52dvh;
+        margin: 10px auto; border: 1px solid var(--cp-border);
+        touch-action: none; cursor: crosshair; background: transparent;
+      }
+      .scp-gradient-sampler-panel button {
+        padding: 6px 10px; border: 1px solid var(--cp-border);
+        background: var(--cp-input); color: var(--cp-text);
+        border-radius: 5px; cursor: pointer;
+      }
+      .scp-gradient-sampler-panel button:disabled { opacity: .4; cursor: not-allowed; }
+      .scp-gradient-sampler-status { min-height: 32px; }
+
       /* ── Wheel area ── */
       .scp-wheel-area {
         position: relative;
@@ -2024,43 +2057,7 @@
             data-tut-key="tut.pipette"
             data-tut="Eyedropper|Click then sample any pixel on screen to capture its exact color. Requires a Chromium-based browser."
           >
-            <!-- Eyedropper. The <rect id="pipetteFill"> is the inner
-                 glass tube; its fill is set to the last picked color
-                 with a CSS transition for a "sucking up the color"
-                 effect. Stroke uses currentColor so the outline still
-                 follows the icon button color. -->
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.6"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <!-- Glass tube body, rotated 45° around its midpoint -->
-              <g transform="rotate(-45 12 12)">
-                <!-- inner fill (color sample) -->
-                <rect
-                  id="pipetteFill"
-                  x="10.6"
-                  y="7"
-                  width="2.8"
-                  height="7"
-                  rx="0.6"
-                  fill="transparent"
-                  stroke="none"
-                  style="transition: fill 0.4s ease"
-                />
-                <!-- outer tube outline -->
-                <rect x="10.4" y="6.8" width="3.2" height="7.4" rx="0.7" />
-                <!-- bulb cap on top -->
-                <rect x="9.6" y="4.4" width="4.8" height="2.4" rx="0.6" />
-                <!-- tip below tube -->
-                <path d="M11 14.2 L12 16.6 L13 14.2 Z" />
-                <!-- liquid level highlight -->
-                <line x1="10.7" y1="10.5" x2="13.3" y2="10.5" opacity="0.55" />
-              </g>
-            </svg>
+            <span class="scp-corner-emoji" aria-hidden="true">💉</span>
           </button>
           <button
             class="scp-corner scp-corner-tr"
@@ -2069,15 +2066,7 @@
             data-tut-key="tut.add"
             data-tut="Add to palette|Save the current color (or gradient) to the saved palette on the left for quick reuse."
           >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.5"
-            >
-              <line x1="12" y1="5" x2="12" y2="19" />
-              <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
+            <span class="scp-corner-emoji" aria-hidden="true">➕</span>
           </button>
           <button
             class="scp-corner scp-corner-bl"
@@ -2086,17 +2075,7 @@
             data-tut-key="tut.swap"
             data-tut="Swap fg / bg|Swap the active color with the previously-picked one — quick A↔B comparison."
           >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <polyline points="16 3 21 3 21 8" />
-              <line x1="4" y1="20" x2="21" y2="3" />
-              <polyline points="8 21 3 21 3 16" />
-              <line x1="20" y1="4" x2="3" y2="21" />
-            </svg>
+            <span class="scp-corner-emoji" aria-hidden="true">🔄</span>
           </button>
           <button
             class="scp-corner scp-corner-br"
@@ -2105,20 +2084,16 @@
             data-tut-key="tut.random"
             data-tut="Random color|Roll a random hue + saturation + value combination — great for inspiration."
           >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <rect x="3" y="3" width="18" height="18" rx="2" />
-              <circle cx="8" cy="8" r="1.2" fill="currentColor" />
-              <circle cx="16" cy="8" r="1.2" fill="currentColor" />
-              <circle cx="12" cy="12" r="1.2" fill="currentColor" />
-              <circle cx="8" cy="16" r="1.2" fill="currentColor" />
-              <circle cx="16" cy="16" r="1.2" fill="currentColor" />
-            </svg>
+            <span class="scp-corner-emoji" aria-hidden="true">🎲</span>
           </button>
+          <button
+            class="scp-corner scp-corner-gradient"
+            id="cornerGradientPipette"
+            title="Gradient eyedropper (from image)"
+            aria-label="Gradient eyedropper: sample an image"
+            data-tut-key="tut.gradientPipette"
+            data-tut="Gradient eyedropper|Select a local PNG, JPEG, WebP or SVG, then drag a line across the gradient. Up to 8 stops and a linear angle are estimated from pixels and can be edited below."
+          ><span class="scp-corner-emoji" aria-hidden="true">🌈</span></button>
           <div
             class="scp-bw-dot"
             id="bwBlack"
@@ -3424,15 +3399,37 @@
               S.a = 1;
               drawWheel();
               fullUpdate();
-              // Fill the eyedropper tube with the picked color so the
-              // icon visually "keeps" what was just sampled.
-              const fillEl = document.getElementById("pipetteFill");
-              if (fillEl) fillEl.setAttribute("fill", result.sRGBHex);
+              // Keep the original single-color sampling behavior.
             }
           } catch {
             /* cancelled */
           }
         });
+        // Import and sample local-image gradients without screen capture.
+        // The callback uses the existing gradient state and change notifications.
+        import("./smart-gradient-eyedropper.js")
+          .then(({ initGradientEyedropper }) => initGradientEyedropper({
+            trigger: $("cornerGradientPipette"),
+            onApply: (g) => {
+              S.grad.type = "linear";
+              S.grad.angle = g.angle;
+              S.grad.stops = g.stops;
+              S.grad.activeStop = 0;
+              const st = g.stops[0];
+              S.h = st.h; S.s = st.s; S.v = st.v; S.a = st.a;
+              $("gradToggle").classList.add("open");
+              $("gradBody").classList.add("open");
+              $("gradToggle").setAttribute("aria-expanded", "true");
+              try { localStorage.setItem("scp-grad-open", "1"); } catch {}
+              fullUpdate();
+            }
+          }))
+          .catch((error) => {
+            console.warn("Gradient eyedropper unavailable:", error);
+            $("cornerGradientPipette").title = "Gradient eyedropper unavailable: check module hosting";
+            $("cornerGradientPipette").disabled = true;
+          });
+
         $("cornerAdd").addEventListener("click", () => addCurrentToTop());
         $("cornerSwap").addEventListener("click", () => {
           if (!S.bg) {
