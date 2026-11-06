@@ -30,6 +30,7 @@ export function initGradientEyedropper({ trigger, onApply }) {
   const status = $(".scp-gradient-sampler-status");
   const apply = $("[data-apply]"), ctx = canvas.getContext("2d", { willReadFrequently: true });
   const source = document.createElement("canvas"), sourceCtx = source.getContext("2d", { willReadFrequently: true });
+  source.width = source.height = canvas.width = canvas.height = 0;
   let start = null, end = null, dragging = false, estimate = null, previousFocus = null;
 
   const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
