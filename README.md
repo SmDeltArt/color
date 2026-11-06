@@ -4,11 +4,11 @@ A standalone HTML colour picker with solid colours, alpha, linear/radial gradien
 
 **[Integration guide and ready-to-paste LLM prompt](EMBEDDING.md)** — start here for local copies, hosted iframe use and transparent full-screen overlays.
 
-## Gradient eyedropper (image sampling)
+## Gradient eyedroppers (image sampling and direct host selection)
 
-The five high-visibility emoji wheel actions are 💉 single-color eyedropper, ➕ save color, 🔄 swap colors, 🎲 random color, and 🌈 gradient eyedropper. The 🌈 action opens a local-image sampler: choose a PNG, JPEG, WebP or SVG, then draw a line over the gradient. It estimates the angle and up to eight stops and loads them into the existing editable linear-gradient panel. The tutorial hover mode describes this workflow.
+The six high-visibility emoji wheel actions are 💉 single-color eyedropper, ➕ save color, 🔄 swap colors, 🎲 random color, 🌈 file-based gradient eyedropper, and 🎯 direct gradient eyedropper. The 🌈 action opens a local-image sampler: choose a PNG, JPEG, WebP or SVG, then draw a line over the gradient. It estimates the angle and up to eight stops and loads them into the existing editable linear-gradient panel. The tutorial hover mode describes this workflow.
 
-This is **pixel-based approximation**, not exact SVG/CSS-gradient recovery, and it cannot pick an arbitrary area of the screen or a cross-origin parent iframe. Alpha and hidden source stops cannot reliably be inferred from flattened pixels. Image files stay local in the browser. The sampler is implemented in `smart-gradient-eyedropper.js`, which must be deployed/copied beside `smart-color-picker.html`.
+The 🎯 button requests object selection through the embedding host via `scp:gradient-pick-request`. The host must inspect its own DOM/SVG tree and return `scp:gradient-pick-result` with matching `requestId` and normalized `{type, angle, stops:[{pos,hex,a}]}`. It does not bypass cross-origin restrictions. In standalone mode without an embedding host, the direct button explains that host integration is required.\n\nThis is **pixel-based approximation**, not exact SVG/CSS-gradient recovery, and it cannot pick an arbitrary area of the screen or a cross-origin parent iframe. Alpha and hidden source stops cannot reliably be inferred from flattened pixels. Image files stay local in the browser. The sampler is now implemented directly in `smart-color-picker.html`; no additional JavaScript file is required. Its compact controls and image preview appear inside the expandable gradient section, under the wheel, and scroll with that section.
 
 ## Run
 

@@ -447,34 +447,20 @@
       .scp-corner { font-size: 15px; line-height: 1; color: var(--cp-text); }
       .scp-corner-emoji { pointer-events: none; user-select: none; }
       .scp-corner-gradient { top: -7px; left: 98px; }
-      .scp-gradient-sampler[hidden] { display: none !important; }
-      .scp-gradient-sampler {
-        position: fixed; inset: 0; z-index: 100010; display: grid;
-        place-items: center; padding: 12px; background: rgba(0, 0, 0, .7);
-      }
-      .scp-gradient-sampler-panel {
-        width: min(720px, 100%); max-height: 95dvh; overflow: auto;
-        box-sizing: border-box; padding: 14px; border-radius: 12px;
-        border: 1px solid var(--cp-border); background: var(--cp-panel);
-        color: var(--cp-text); box-shadow: 0 12px 40px rgba(0, 0, 0, .4);
-      }
-      .scp-gradient-sampler-header, .scp-gradient-sampler footer {
-        display: flex; gap: 8px; align-items: center; justify-content: space-between;
-      }
-      .scp-gradient-sampler-panel p { margin: 8px 0; font-size: 12px; line-height: 1.5; }
-      .scp-gradient-sampler-panel input { max-width: 100%; margin: 8px 0; }
-      .scp-gradient-sampler-panel canvas {
-        display: block; max-width: 100%; height: auto; max-height: 52dvh;
-        margin: 10px auto; border: 1px solid var(--cp-border);
-        touch-action: none; cursor: crosshair; background: transparent;
-      }
-      .scp-gradient-sampler-panel button {
-        padding: 6px 10px; border: 1px solid var(--cp-border);
-        background: var(--cp-input); color: var(--cp-text);
-        border-radius: 5px; cursor: pointer;
-      }
-      .scp-gradient-sampler-panel button:disabled { opacity: .4; cursor: not-allowed; }
-      .scp-gradient-sampler-status { min-height: 32px; }
+      .scp-corner-direct { top: 205px; left: 98px; }
+      /* Inline image sampler: part of the existing draggable picker. */
+      .scp-gradient-sampler[hidden] { display:none!important; }
+      .scp-gradient-sampler { margin:6px 0 4px; padding:6px; border:1px solid var(--cp-border); background:var(--cp-input); border-radius:6px; min-width:0; }
+      .scp-gradient-sampler-panel { width:100%; min-width:0; box-sizing:border-box; }
+      .scp-gradient-sampler-header, .scp-gradient-sampler footer { display:flex; align-items:center; justify-content:space-between; gap:5px; }
+      .scp-gradient-sampler-panel p { margin:4px 0; font-size:10px; color:var(--cp-muted); line-height:1.4; overflow-wrap:anywhere; }
+      .scp-gradient-sampler-panel input { display:block; width:100%; max-width:100%; font-size:10px; }
+      .scp-gradient-sampler-panel canvas { display:block; max-width:100%; width:auto; height:auto; max-height:170px; margin:6px auto; border:1px solid var(--cp-border); touch-action:none; cursor:crosshair; }
+      .scp-gradient-sampler-panel canvas[width="0"] { display:none; }
+      .scp-gradient-sampler-panel button { padding:3px 7px; border:1px solid var(--cp-border); background:var(--cp-panel); color:var(--cp-text); border-radius:4px; cursor:pointer; font-size:10px; }
+      .scp-gradient-sampler-panel button:disabled { opacity:.4; cursor:not-allowed; }
+      .scp-gradient-sampler-header strong { font-size:11px; }
+      .scp-gradient-sampler-status { min-height:15px; }
 
       /* ── Wheel area ── */
       .scp-wheel-area {
@@ -2094,6 +2080,14 @@
             data-tut-key="tut.gradientPipette"
             data-tut="Gradient eyedropper|Select a local PNG, JPEG, WebP or SVG, then drag a line across the gradient. Up to 8 stops and a linear angle are estimated from pixels and can be edited below."
           ><span class="scp-corner-emoji" aria-hidden="true">🌈</span></button>
+          <button
+            class="scp-corner scp-corner-direct"
+            id="cornerDirectGradient"
+            title="Direct gradient eyedropper — select an existing SVG, CSS or image element"
+            aria-label="Direct gradient eyedropper"
+            data-tut-key="tut.gradientDirect"
+            data-tut="Direct gradient eyedropper|Select an existing object in the host app or SVG tree. SVG/CSS gradients can be read from their definitions; raster gradients need a sampled line. Cross-origin hosts must implement the scp:gradient-pick-request bridge."
+          ><span class="scp-corner-emoji" aria-hidden="true">🎯</span></button>
           <div
             class="scp-bw-dot"
             id="bwBlack"
@@ -2258,6 +2252,11 @@
             </div>
             <div class="scp-fmt-mobile" id="fmtMobile"></div>
           </div>
+
+          <!-- Inline sampler lives inside the scrollable gradient section. -->
+          <div id="scpGradientSamplerMount"></div>
+          <div id="scpGradientDirectInfo" hidden role="status" aria-live="polite"
+            style="margin:4px 0;padding:5px;border:1px solid var(--cp-border);border-radius:5px;color:var(--cp-muted);font-size:10px"></div>
 
           <!-- Type + angle + stop controls. Replaces the old single-row
              layout that lived in .scp-grad-header. -->
@@ -3405,31 +3404,265 @@
             /* cancelled */
           }
         });
-        // Import and sample local-image gradients without screen capture.
-        // The callback uses the existing gradient state and change notifications.
-        import("./smart-gradient-eyedropper.js")
-          .then(({ initGradientEyedropper }) => initGradientEyedropper({
-            trigger: $("cornerGradientPipette"),
-            onApply: (g) => {
-              S.grad.type = "linear";
-              S.grad.angle = g.angle;
-              S.grad.stops = g.stops;
-              S.grad.activeStop = 0;
-              const st = g.stops[0];
-              S.h = st.h; S.s = st.s; S.v = st.v; S.a = st.a;
-              $("gradToggle").classList.add("open");
-              $("gradBody").classList.add("open");
-              $("gradToggle").setAttribute("aria-expanded", "true");
-              try { localStorage.setItem("scp-grad-open", "1"); } catch {}
-              fullUpdate();
-            }
-          }))
-          .catch((error) => {
-            console.warn("Gradient eyedropper unavailable:", error);
-            $("cornerGradientPipette").title = "Gradient eyedropper unavailable: check module hosting";
-            $("cornerGradientPipette").disabled = true;
-          });
+/**
+ * SmΔrt gradient eyedropper: samples a user-provided local image along a drawn line.
+ * Returns approximate linear gradient stops in the existing SmartColorPicker state format.
+ * Does not read cross-origin frames or capture the user's screen.
+ */
+function initGradientEyedropper({ trigger, onApply }) {
+  if (!trigger || typeof onApply !== "function") return;
+  const dialog = document.createElement("div");
+  dialog.className = "scp-gradient-sampler";
+  dialog.hidden = true;
+  dialog.innerHTML = `
+    <section class="scp-gradient-sampler-panel"
+      aria-labelledby="scpGradientSamplerTitle">
+      <header class="scp-gradient-sampler-header">
+        <strong id="scpGradientSamplerTitle">🌈 Gradient eyedropper</strong>
+        <button type="button" data-close aria-label="Close gradient eyedropper">✕</button>
+      </header>
+      <p>Choose a local PNG, JPEG, WebP or SVG. Drag a line from the gradient's start to its end to estimate up to 8 editable color stops.</p>
+      <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" aria-label="Choose an image to sample">
+      <canvas aria-label="Draw a sampling line across the image" tabindex="0"></canvas>
+      <p class="scp-gradient-sampler-status" role="status" aria-live="polite">Choose an image to begin. Samples are approximate; original SVG/CSS settings cannot be recovered from pixels.</p>
+      <footer>
+        <button type="button" data-cancel>Cancel</button>
+        <button type="button" data-apply disabled>Apply gradient</button>
+      </footer>
+    </section>`;
+  document.getElementById("scpGradientSamplerMount").appendChild(dialog);
+  const $ = selector => dialog.querySelector(selector);
+  const input = $('input[type="file"]'), canvas = $("canvas");
+  const status = $(".scp-gradient-sampler-status");
+  const apply = $("[data-apply]"), ctx = canvas.getContext("2d", { willReadFrequently: true });
+  const source = document.createElement("canvas"), sourceCtx = source.getContext("2d", { willReadFrequently: true });
+  source.width = source.height = canvas.width = canvas.height = 0;
+  let start = null, end = null, dragging = false, estimate = null;
 
+  const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
+  const rgbToHsv = (r, g, b) => {
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
+    let h = 0;
+    if (d) {
+      if (max === r) h = ((g - b) / d) % 6;
+      else if (max === g) h = (b - r) / d + 2;
+      else h = (r - g) / d + 4;
+      h = (h * 60 + 360) % 360;
+    }
+    return { h, s: max ? d / max : 0, v: max };
+  };
+  const pointFromEvent = e => {
+    const r = canvas.getBoundingClientRect();
+    return {
+      x: clamp((e.clientX - r.left) * canvas.width / r.width, 0, canvas.width - 1),
+      y: clamp((e.clientY - r.top) * canvas.height / r.height, 0, canvas.height - 1)
+    };
+  };
+  const redraw = () => {
+    if (!canvas.width || !canvas.height) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(source, 0, 0);
+    if (!start || !end) return;
+    ctx.save();
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = "#fff";
+    ctx.setLineDash([7, 4]);
+    ctx.beginPath(); ctx.moveTo(start.x, start.y); ctx.lineTo(end.x, end.y); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.strokeStyle = "#222";
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(start.x, start.y, 5, 0, Math.PI * 2);
+    ctx.moveTo(end.x + 5, end.y); ctx.arc(end.x, end.y, 5, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  };
+  const reconstruct = () => {
+    if (!start || !end) return null;
+    const dx = end.x - start.x, dy = end.y - start.y;
+    if (Math.hypot(dx, dy) < 12) return null;
+    const samples = [];
+    for (let i = 0; i <= 64; i++) {
+      const t = i / 64;
+      const x = clamp(Math.round(start.x + dx * t), 0, source.width - 1);
+      const y = clamp(Math.round(start.y + dy * t), 0, source.height - 1);
+      const rgba = sourceCtx.getImageData(x, y, 1, 1).data;
+      samples.push([rgba[0], rgba[1], rgba[2]]);
+    }
+    const delta = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+    let widest = 0;
+    for (const color of samples) widest = Math.max(widest, delta(samples[0], color));
+    if (widest < 12) return null;
+    // Iteratively keep the point with the greatest RGB deviation from linear interpolation.
+    const indices = [0, 64];
+    while (indices.length < 8) {
+      let maxError = 0, maxIndex = -1;
+      for (let segment = 0; segment < indices.length - 1; segment++) {
+        const a = indices[segment], b = indices[segment + 1];
+        for (let i = a + 1; i < b; i++) {
+          const t = (i - a) / (b - a);
+          const prediction = samples[a].map((v, c) => v + (samples[b][c] - v) * t);
+          const error = delta(samples[i], prediction);
+          if (error > maxError) { maxError = error; maxIndex = i; }
+        }
+      }
+      if (maxError <= 16 || maxIndex < 0) break;
+      indices.push(maxIndex);
+      indices.sort((a, b) => a - b);
+    }
+    const angle = (Math.atan2(dx, -dy) * 180 / Math.PI + 360) % 360;
+    return {
+      type: "linear", angle: Math.round(angle),
+      stops: indices.map(i => ({
+        pos: Math.round(100 * i / 64),
+        ...rgbToHsv(...samples[i]), a: 1
+      }))
+    };
+  };
+  const close = () => { dialog.hidden = true; dragging = false; trigger.focus(); };
+  const open = () => {
+    const toggle = document.getElementById("gradToggle"), body = document.getElementById("gradBody");
+    toggle.classList.add("open"); body.classList.add("open");
+    toggle.setAttribute("aria-expanded", "true");
+    try { localStorage.setItem("scp-grad-open", "1"); } catch {}
+    dialog.hidden = false; renderGradient(); emitColor();
+    requestAnimationFrame(() => {
+      dialog.scrollIntoView({block:"nearest",behavior:"smooth"});
+      input.focus({preventScroll:true});
+    });
+  };
+  trigger.addEventListener("click", () => dialog.hidden ? open() : close());
+  window._scpInlineGradientSampler = {open,close,get visible(){return !dialog.hidden;} };
+  $("[data-close]").addEventListener("click", close);
+  $("[data-cancel]").addEventListener("click", close);
+  input.addEventListener("change", async () => {
+    const file = input.files?.[0];
+    if (!file) return;
+    estimate = null; apply.disabled = true; start = end = null;
+    if (!["image/png", "image/jpeg", "image/webp", "image/svg+xml"].includes(file.type) || file.size > 15_000_000) {
+      status.textContent = "Choose a supported image smaller than 15 MB."; return;
+    }
+    const url = URL.createObjectURL(file);
+    try {
+      const img = new Image();
+      await new Promise((resolve, reject) => {
+        img.onload = resolve; img.onerror = reject; img.src = url;
+      });
+      if (!img.naturalWidth || !img.naturalHeight) throw new Error("Empty image");
+      const scale = Math.min(1, 960 / img.naturalWidth, 520 / img.naturalHeight);
+      source.width = canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
+      source.height = canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
+      sourceCtx.clearRect(0, 0, source.width, source.height);
+      sourceCtx.drawImage(img, 0, 0, source.width, source.height);
+      redraw();
+      status.textContent = "Drag a line across the gradient. Results are estimates from rendered pixels.";
+    } catch {
+      status.textContent = "Unable to decode the selected image.";
+    } finally { URL.revokeObjectURL(url); }
+  });
+  canvas.addEventListener("pointerdown", e => {
+    if (!source.width || !source.height || e.button !== 0) return;
+    e.preventDefault(); canvas.setPointerCapture(e.pointerId);
+    start = end = pointFromEvent(e); dragging = true; estimate = null; apply.disabled = true; redraw();
+  });
+  canvas.addEventListener("pointermove", e => {
+    if (!dragging) return;
+    end = pointFromEvent(e); redraw();
+  });
+  const finish = e => {
+    if (!dragging) return;
+    dragging = false;
+    end = pointFromEvent(e);
+    redraw();
+    try { estimate = reconstruct(); } catch { estimate = null; }
+    apply.disabled = !estimate;
+    status.textContent = estimate
+      ? `Estimated linear gradient: ${estimate.angle}°, ${estimate.stops.length} stops. Review and adjust after applying.`
+      : "No distinct gradient detected. Draw a longer line through a changing color region.";
+  };
+  canvas.addEventListener("pointerup", finish);
+  canvas.addEventListener("pointercancel", () => { dragging = false; redraw(); });
+  apply.addEventListener("click", () => {
+    if (!estimate) return;
+    onApply(estimate);
+    close();
+  });
+}
+
+        // Reuse the existing gradient model and native change bridge.
+        initGradientEyedropper({
+          trigger: $("cornerGradientPipette"),
+          onApply: g => {
+            S.grad.type = "linear"; S.grad.angle = g.angle;
+            S.grad.stops = g.stops; S.grad.activeStop = 0;
+            const st = g.stops[0];
+            S.h = st.h; S.s = st.s; S.v = st.v; S.a = st.a;
+            fullUpdate();
+          }
+        });
+
+        // Direct selection is owned by the host when the picker is embedded.
+        // The picker cannot inspect a cross-origin parent DOM by itself.
+        let gradientPickRequest = null;
+        function applyInspectedGradient(data) {
+          if (!data || (data.type !== "linear" && data.type !== "radial") ||
+              !Array.isArray(data.stops) || data.stops.length < 2 ||
+              data.stops.length > 8) return false;
+          const stops = [];
+          for (const stop of data.stops) {
+            const rgb = typeof stop.hex === "string" ? hex2rgb(stop.hex) : null;
+            if (!rgb || !Number.isFinite(Number(stop.pos)) ||
+                !Number.isFinite(Number(stop.a ?? 1))) return false;
+            const [h, s, v] = rgb2hsv(...rgb);
+            stops.push({pos: clamp(Number(stop.pos), 0, 100), h, s, v,
+              a: clamp(Number(stop.a ?? 1), 0, 1)});
+          }
+          S.grad.type = data.type;
+          S.grad.angle = Number.isFinite(Number(data.angle))
+            ? clamp(Number(data.angle), 0, 360) : 90;
+          S.grad.stops = stops.sort((a, b) => a.pos - b.pos);
+          S.grad.activeStop = 0;
+          const first = S.grad.stops[0];
+          S.h = first.h; S.s = first.s; S.v = first.v; S.a = first.a;
+          $("gradToggle").classList.add("open");
+          $("gradBody").classList.add("open");
+          $("gradToggle").setAttribute("aria-expanded", "true");
+          try { localStorage.setItem("scp-grad-open", "1"); } catch {}
+          fullUpdate();
+          return true;
+        }
+        function setDirectGradientInfo(message) {
+          const info = $("scpGradientDirectInfo");
+          info.textContent = message || "";
+          info.hidden = !message;
+          if (message) info.scrollIntoView({block:"nearest"});
+        }
+        $("cornerDirectGradient").addEventListener("click", () => {
+          setDirectGradientInfo("🎯 Select a gradient in the connected host SVG/CSS preview or tree.");
+          // Direct host selection also uses the same inline gradient area.
+          $("gradToggle").classList.add("open");
+          $("gradBody").classList.add("open");
+          $("gradToggle").setAttribute("aria-expanded", "true");
+          try { localStorage.setItem("scp-grad-open", "1"); } catch {}
+          if (window._scpInlineGradientSampler?.visible)
+            window._scpInlineGradientSampler.close();
+          renderGradient(); emitColor();
+          if (window.parent === window || !requestOrigin || requestOrigin === "null") {
+            setDirectGradientInfo("Direct inspection requires a connected host. Use 🌈 to sample a local image.");
+            return;
+          }
+          gradientPickRequest = {
+            id: crypto.randomUUID?.() || String(Date.now()) + "-" + Math.random(),
+            origin: requestOrigin,
+            expires: Date.now() + 60_000
+          };
+          window.parent.postMessage({
+            type: "smart-widget",
+            action: "scp:gradient-pick-request",
+            data: {requestId: gradientPickRequest.id, source: "direct"}
+          }, requestOrigin);
+          setDirectGradientInfo("🎯 Waiting for a selection in the host application…");
+        });
         $("cornerAdd").addEventListener("click", () => addCurrentToTop());
         $("cornerSwap").addEventListener("click", () => {
           if (!S.bg) {
@@ -4306,6 +4539,21 @@
           const msg = e.data;
           if (!msg || msg.type !== "smart-widget") return;
 
+          // Accept only a matching pending host response from our parent frame.
+          if (msg.action === "scp:gradient-pick-result") {
+            if (e.source !== window.parent || !gradientPickRequest ||
+                e.origin !== gradientPickRequest.origin ||
+                msg.data?.requestId !== gradientPickRequest.id ||
+                Date.now() > gradientPickRequest.expires) return;
+            gradientPickRequest = null;
+            if (msg.data?.gradientData) {
+              const ok = applyInspectedGradient(msg.data.gradientData);
+              setDirectGradientInfo(ok ? "Gradient imported — review editable stops below." : "Unsupported gradient; use 🌈 to sample an image.");
+            } else {
+              setDirectGradientInfo(typeof msg.data?.error === "string" ? msg.data.error.slice(0, 160) : "No supported gradient detected.");
+            }
+            return;
+          }
           if (msg.action === "scp:open") {
             requestOrigin = e.origin;
             if (msg.data && msg.data.theme) {
